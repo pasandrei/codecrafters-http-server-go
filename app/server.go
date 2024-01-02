@@ -36,16 +36,22 @@ func main() {
 
 	fmt.Printf("Path: %s\n", path)
 	if path == "/" {
-		_, err = connection.Write([]byte("HTTP/1.1 200 OK\r\n\r\n"))
-		if err != nil {
-			fmt.Println("Error writing to connection: ", err.Error())
-			os.Exit(1)
-		}
+		handleConnectionWrite(connection, "HTTP/1.1 200 OK\r\n\r\n")
+	} else if strings.HasPrefix(path, "/echo/") {
+		fmt.Printf("Echoing: %s\n", path)
+		echoedString := strings.TrimPrefix(path, "/echo/")
+		response := fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", len(echoedString), echoedString)
+
+		handleConnectionWrite(connection, response)
 	} else {
-		_, err = connection.Write([]byte("HTTP/1.1 404 Not Found\r\n\r\n"))
-		if err != nil {
-			fmt.Println("Error writing to connection: ", err.Error())
-			os.Exit(1)
-		}
+		handleConnectionWrite(connection, "HTTP/1.1 404 Not Found\r\n\r\n")
+	}
+}
+
+func handleConnectionWrite(connection net.Conn, response string) {
+	_, err := connection.Write([]byte("HTTP/1.1 404 Not Found\r\n\r\n"))
+	if err != nil {
+		fmt.Println("Error writing to connection: ", err.Error())
+		os.Exit(1)
 	}
 }
