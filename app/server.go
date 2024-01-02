@@ -21,12 +21,18 @@ func main() {
 
 	defer l.Close()
 
-	connection, err := l.Accept()
-	if err != nil {
-		fmt.Println("Error accepting connection: ", err.Error())
-		os.Exit(1)
-	}
+	for {
+		connection, err := l.Accept()
+		if err != nil {
+			fmt.Println("Error accepting connection: ", err.Error())
+			continue
+		}
 
+		go handleConnection(connection)
+	}
+}
+
+func handleConnection(connection net.Conn) {
 	// Get the path from the request
 	buffer := make([]byte, 1024)
 	_, _ = connection.Read(buffer)
