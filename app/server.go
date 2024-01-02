@@ -42,6 +42,17 @@ func main() {
 		response := fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", len(echoedString), echoedString)
 
 		handleConnectionWrite(connection, response)
+	} else if strings.HasPrefix(path, "/user-agent") {
+		lines := strings.Split(string(buffer), "\r\n")
+		for _, line := range lines {
+			if strings.HasPrefix(line, "User-Agent: ") {
+				userAgent := strings.TrimPrefix(line, "User-Agent: ")
+				response := fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", len(userAgent), userAgent)
+
+				handleConnectionWrite(connection, response)
+				break
+			}
+		}
 	} else {
 		handleConnectionWrite(connection, "HTTP/1.1 404 Not Found\r\n\r\n")
 	}
