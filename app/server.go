@@ -29,7 +29,7 @@ func main() {
 
 	// Get the path from the request
 	buffer := make([]byte, 1024)
-	_, err = connection.Read(buffer)
+	_, _ = connection.Read(buffer)
 
 	first_line := strings.Split(string(buffer), "\r\n")[0]
 	path := strings.Split(first_line, " ")[1]
