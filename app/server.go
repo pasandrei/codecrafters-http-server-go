@@ -33,6 +33,8 @@ func main() {
 }
 
 func handleConnection(connection net.Conn) {
+	defer connection.Close()
+
 	// Get the path from the request
 	buffer := make([]byte, 1024)
 	_, _ = connection.Read(buffer)
