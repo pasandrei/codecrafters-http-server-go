@@ -61,6 +61,22 @@ func handleConnection(connection net.Conn) {
 				break
 			}
 		}
+	} else if strings.HasPrefix(path, "/files/") {
+		fileName := strings.TrimPrefix(path, "/files/")
+		file, err := os.Open(fmt.Sprintf("%s%s", os.Args[2], fileName))
+
+		if err != nil {
+			handleConnectionWrite(connection, "HTTP/1.1 404 Not Found\r\n\r\n")
+		} else {
+			fileInfo, _ := file.Stat()
+			fileSize := fileInfo.Size()
+			fileBuffer := make([]byte, fileSize)
+			_, _ = file.Read(fileBuffer)
+			fmt.Printf("File: %s\n", string(fileBuffer))
+			response := fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: %d\r\n\r\n%s", fileSize, string(fileBuffer))
+
+			handleConnectionWrite(connection, response)
+		}
 	} else {
 		handleConnectionWrite(connection, "HTTP/1.1 404 Not Found\r\n\r\n")
 	}
