@@ -39,8 +39,19 @@ func handleConnection(connection net.Conn) {
 	buffer := make([]byte, 1024)
 	_, _ = connection.Read(buffer)
 
-	first_line := strings.Split(string(buffer), "\r\n")[0]
-	path := strings.Split(first_line, " ")[1]
+	lines := strings.Split(string(buffer), "\r\n")
+
+	startLine := lines[0]
+	parts := strings.Split(startLine, " ")
+	method, path := parts[0], parts[1]
+
+	body := ""
+	for i, line := range lines[1:] {
+		if line == "" {
+			body = strings.Join(lines[i+2:], "\r\n")
+			break
+		}
+	}
 
 	fmt.Printf("Path: %s\n", path)
 	if path == "/" {
@@ -60,6 +71,16 @@ func handleConnection(connection net.Conn) {
 				handleConnectionWrite(connection, response)
 				break
 			}
+		}
+	} else if method == "POST" && strings.HasPrefix(path, "/files/") {
+		fileName := strings.TrimPrefix(path, "/files/")
+		file, err := os.Create(fmt.Sprintf("%s%s", os.Args[2], fileName))
+
+		if err != nil {
+			handleConnectionWrite(connection, "HTTP/1.1 500 Internal Server Error\r\n\r\n")
+		} else {
+			file.Write([]byte(body))
+			handleConnectionWrite(connection, "HTTP/1.1 201 Created\r\n\r\n")
 		}
 	} else if strings.HasPrefix(path, "/files/") {
 		fileName := strings.TrimPrefix(path, "/files/")
