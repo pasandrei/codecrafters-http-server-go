@@ -37,7 +37,8 @@ func handleConnection(connection net.Conn) {
 
 	// Get the path from the request
 	buffer := make([]byte, 1024)
-	_, _ = connection.Read(buffer)
+	n, _ := connection.Read(buffer)
+	buffer = buffer[:n]
 
 	lines := strings.Split(string(buffer), "\r\n")
 
